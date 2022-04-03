@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { TwitterApi } from 'twitter-api-v2';
-import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Tweet } from './tweet.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TwitterService {
   private twitterClient: TwitterApi;
-  constructor(private configService: ConfigService) {
+  constructor(
+    @InjectRepository(Tweet)
+    private tweetRepository: Repository<Tweet>,
+    private configService: ConfigService,
+  ) {
     this.twitterClient = new TwitterApi(
       configService.get('TWITTER_BEARER_TOKEN'),
     );
@@ -35,16 +41,20 @@ export class TwitterService {
       };
 
       if (
-        tweet.attachments?.media_keys.length === 1 && // only one video per tweet
+        tweet.attachments?.media_keys.length === 1 &&
         tweet.attachments?.media_keys[0].startsWith('7_') // media is a video
       ) {
         const video = tweets.includes.media.find(
-          (media) => media.media_key === tweet.attachments.media_keys[0],
+          (media) => media.media_key === tweet.attachments?.media_keys[0],
         );
         parsedTweet.viewCount = video.public_metrics.view_count;
       }
 
       return parsedTweet;
     });
+  }
+
+  async saveTweets(tweets: Tweet[]) {
+    await this.tweetRepository.save(tweets);
   }
 }

@@ -38,5 +38,19 @@ async function bootstrap() {
     await app.close();
     return;
   }
+
+  if (!Array.isArray(recentTweets) || recentTweets.length === 0) {
+    logger.error(`No tweets found for keyword: ${keyword}`);
+    await app.close();
+    return;
+  }
+
+  try {
+    await twitterService.saveTweets(recentTweets);
+  } catch (error) {
+    logger.error(error);
+    await app.close();
+    return;
+  }
 }
 bootstrap();
