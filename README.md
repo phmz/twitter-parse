@@ -21,4 +21,7 @@ POSTGRES_DB             => Postgres database
 # development
 $ ts-node src/main.ts
 $ ts-node src/main.ts "#<keyword>"
+
+$ npm start
+$ yarn start
 ```
